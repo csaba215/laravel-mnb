@@ -30,6 +30,11 @@ class Client
         return Carbon::parse($date)->format('Y-m-d');
     }
 
+    private function formatFloat(string $number): float
+    {
+        return (float) str_replace(',', '.', $number);
+    }
+
     /**
      * @return string[]
      */
@@ -64,6 +69,7 @@ class Client
      * Will return with the cached exchange rate
      *
      * @return array{'rate': float, "unit": int}
+     *
      * @throws Exception
      */
     public function exchangeRate(string $code, string|Carbon|DateTimeInterface|null $date = null): array
@@ -82,7 +88,7 @@ class Client
                 }
 
                 return [
-                    'rate' => (float) $xml->Day->Rate,
+                    'rate' => $this->formatFloat((string) $xml->Day->Rate),
                     'unit' => (int) $xml->Day->Rate->attributes()->unit,
                 ];
             }
@@ -91,7 +97,8 @@ class Client
 
     /**
      * Will return with the current exchange rate
-     * @return array<string,array{rate: float, unit: integer}>
+     *
+     * @return array<string,array{rate: float, unit: int}>
      */
     public function currentExchangeRates(): array
     {
@@ -109,7 +116,7 @@ class Client
             $current = [];
             foreach ($rates as $rate) {
                 $current[(string) $rate->attributes()->curr] = [
-                    'rate' => (float) $rate,
+                    'rate' => $this->formatFloat((string) $rate),
                     'unit' => (int) $rate->attributes()->unit,
                 ];
             }
