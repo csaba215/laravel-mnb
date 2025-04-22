@@ -1,21 +1,20 @@
 # Laravel-MNB
 
 ## Requirements
-Package requires Soap and version 7.1 of PHP or higher.
+Package requires Soap and version 8.1 of PHP or higher.
 
 ## Know-how
-This package was built on top of this [MNB package](https://github.com/SzuniSOFT/php-mnb).
 Please check out for corresponding documentations.
 
 ## Install
 ```bash
-composer require szunisoft/laravel-mnb
+composer require csaba215/laravel-mnb
 ```
 
 ## Configuration
 ### Export
 ```bash
-php artisan vendor:publish --provider="SzuniSoft\Mnb\Laravel\MnbServiceProvider" --tag="config"
+php artisan vendor:publish --provider="Csaba215\Mnb\Laravel\MnbServiceProvider" --tag="config"
 ```
 ### config/mnb-exchange.php
 ```php
@@ -43,14 +42,14 @@ php artisan vendor:publish --provider="SzuniSoft\Mnb\Laravel\MnbServiceProvider"
 
 ### Access via facade
 ```php
-use SzuniSoft\Mnb\Laravel\Facade\Mnb
+use Csaba215\Mnb\Laravel\Facade\Mnb
 
 $currency = Mnb::currentExchangeRate('EUR');
 ```
 
 ### Resolve by application container
 ```php
-$currency = app(\SzuniSoft\Mnb\Laravel\Client::class)->currentExchangeRate('EUR');
+$currency = app(\Csaba215\Mnb\Laravel\Client::class)->currentExchangeRate('EUR');
 ```
 ### Access refresh date by reference
 You can check the feed date by passing a $date variable to some methods.

@@ -1,11 +1,11 @@
 <?php
 
 
-namespace SzuniSoft\Mnb\Laravel\Facade;
+namespace Csaba215\Mnb\Laravel\Facade;
 
 
 use Illuminate\Support\Facades\Facade;
-use SzuniSoft\Mnb\Laravel\Client;
+use Csaba215\Mnb\Laravel\Client;
 
 class Mnb extends Facade {
 
