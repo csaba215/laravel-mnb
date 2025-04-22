@@ -21,21 +21,26 @@ php artisan vendor:publish --provider="Csaba215\Mnb\Laravel\MnbServiceProvider" 
     /*
      * Wsdl file location.
      * */
-    'wsdl' => env('MNB_SOAP_WSDL', 'http://www.mnb.hu/arfolyamok.asmx?wsdl'),
+    'wsdl' => env('MNB_SOAP_WSDL', 'https://mnb.hu/arfolyamok.asmx?wsdl'),
 
     'cache' => [
-
         /*
          * Desired cache driver for service.
          * */
         'store' => env('MNB_CACHE_DRIVER', 'file'),
 
         /*
-         * Minutes the cached currencies will be held for.
+         * Minutes the cached currencies will be held.
          * Default: 24hrs (1440)
          * */
         'minutes' => env('MNB_CACHE_MINUTES', 1440),
-    ]
+
+        /*
+         * Desired cache key prefix.
+         * */
+        'key' => env('MNB_CACHE_KEY', 'mnb'),
+    ],
+];
 ```
 
 ## Usage
@@ -44,32 +49,26 @@ php artisan vendor:publish --provider="Csaba215\Mnb\Laravel\MnbServiceProvider" 
 ```php
 use Csaba215\Mnb\Laravel\Facade\Mnb
 
-$currency = Mnb::currentExchangeRate('EUR');
+$currency = Mnb::exchangeRate('EUR');
 ```
 
 ### Resolve by application container
 ```php
-$currency = app(\Csaba215\Mnb\Laravel\Client::class)->currentExchangeRate('EUR');
+$currency = app(\Csaba215\Mnb\Laravel\Client::class)->exchangeRate('EUR');
 ```
 ### Access refresh date by reference
 You can check the feed date by passing a $date variable to some methods.
 These methods will make variable to be a Carbon instance.
 
 ```php
-Mnb::exchangeRates($date);
-$date->isToday();
+Mnb::exchangeRate("EUR", "2025-04-22");
 ```
 
 ### Available methods
 
-#### Won't use cache
-These methods won't use and update cache.
-- currentExchangeRate($code, &$date = null): Currency
-- currentExchangeRates(&$date = null): array of Currency
-
 #### Will use cache
 These methods will use cache.
-- exchangeRate($code, &$date = null): single Currency
-- exchangeRates(&$date = null): array of currencies
+- exchangeRate($code, $date = null): single Currency
+- currentExchangeRates(): array of currencies
 - currencies(): array of strings (each is currency code)
 - hasCurrency($code): bool
