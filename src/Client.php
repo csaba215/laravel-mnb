@@ -1,8 +1,10 @@
 <?php
 
-
 namespace Csaba215\Mnb\Laravel;
 
+use Carbon\Carbon;
+use DateTimeInterface;
+use Exception;
 use Illuminate\Contracts\Cache\Repository;
 use Illuminate\Support\Facades\Cache;
 use SoapClient;
@@ -23,13 +25,30 @@ class Client
         $this->cache = Cache::store(config('mnb-exchange.cache.store'));
     }
 
+    private function normalizeDate(string|Carbon|DateTimeInterface $date): string
+    {
+        return Carbon::parse($date)->format('Y-m-d');
+    }
+
     /**
      * @return string[]
      */
     public function currencies(): array
     {
         return $this->cache->remember(config('mnb-exchange.cache.key').'.currencies', config('mnb-exchange.cache.minutes'),
-            fn () => (array) simplexml_load_string($this->client->GetCurrencies()->GetCurrenciesResult)->Currencies->Curr
+            function () {
+                $xml = simplexml_load_string($this->client->GetCurrencies()->GetCurrenciesResult);
+                if ($xml === false) {
+                    throw new Exception('Failed to parse XML response from SOAP API.');
+                }
+
+                $currencies = $xml->Currencies?->Curr;
+                if ($currencies === null) {
+                    throw new Exception('Incorrect/Empty response from SOAP API.');
+                }
+
+                return (array) $currencies;
+            }
         );
     }
 
@@ -43,21 +62,28 @@ class Client
 
     /**
      * Will return with the cached exchange rate
+     *
+     * @return array{'rate': float, "unit": int}
+     * @throws Exception
      */
-    public function exchangeRate(string $code, $date = null): array
+    public function exchangeRate(string $code, string|Carbon|DateTimeInterface|null $date = null): array
     {
         if ($date === null) {
             $date = $this->lastOpeningDate();
         }
 
+        $date = $this->normalizeDate($date);
+
         return $this->cache->remember(config('mnb-exchange.cache.key').".currencies.rate.$code.$date", config('mnb-exchange.cache.minutes'),
             function () use ($date, $code) {
-                $xml = simplexml_load_string($this->client->GetExchangeRates(['startDate' => $date, 'endDate' => $date, 'currencyNames' => $code])->GetExchangeRatesResult)->Day;
+                $xml = simplexml_load_string($this->client->GetExchangeRates(['startDate' => $date, 'endDate' => $date, 'currencyNames' => $code])->GetExchangeRatesResult);
+                if ($xml === false) {
+                    throw new Exception('Failed to parse XML response from SOAP API.');
+                }
 
                 return [
-                    'rate' => (float) $xml->Rate,
-                    'unit' => (int) $xml->Rate->attributes()->unit,
-                    'curr' => (string) $xml->Rate->attributes()->curr,
+                    'rate' => (float) $xml->Day->Rate,
+                    'unit' => (int) $xml->Day->Rate->attributes()->unit,
                 ];
             }
         );
@@ -69,24 +95,55 @@ class Client
     public function currentExchangeRates(): array
     {
         return $this->cache->remember(config('mnb-exchange.cache.key').'.current', config('mnb-exchange.cache.minutes'), function () {
+            $xml = simplexml_load_string($this->client->GetCurrentExchangeRates()?->GetCurrentExchangeRatesResult);
+            if ($xml === false) {
+                throw new Exception('Failed to parse XML response from SOAP API.');
+            }
+
+            $rates = $xml->Day->Rate;
+            if ($rates === null) {
+                throw new Exception('Failed to parse XML response from SOAP API.');
+            }
+
             $current = [];
-            foreach (simplexml_load_string($this->client->GetCurrentExchangeRates()->GetCurrentExchangeRatesResult)->Day->Rate as $rate) {
+            foreach ($rates as $rate) {
                 $current[(string) $rate->attributes()->curr] = [
                     'rate' => (float) $rate,
                     'unit' => (int) $rate->attributes()->unit,
                 ];
             }
+
             return $current;
         });
     }
 
     public function lastOpeningDate(): string
     {
-        return (string) simplexml_load_string($this->client->GetDateInterval()->GetDateIntervalResult)->DateInterval->attributes()->enddate;
+        $xml = simplexml_load_string($this->client->GetDateInterval()->GetDateIntervalResult);
+        if ($xml === false) {
+            throw new Exception('Failed to parse XML response from SOAP API.');
+        }
+
+        return (string) $xml->DateInterval->attributes()->enddate;
     }
 
     public function firstOpeningDate(): string
     {
-        return (string) simplexml_load_string($this->client->GetDateInterval()->GetDateIntervalResult)->DateInterval->attributes()->startdate;
+        $xml = simplexml_load_string($this->client->GetDateInterval()->GetDateIntervalResult);
+        if ($xml === false) {
+            throw new Exception('Failed to parse XML response from SOAP API.');
+        }
+
+        return (string) $xml->DateInterval->attributes()->startdate;
+    }
+
+    public function setClient(SoapClient $client): void
+    {
+        $this->client = $client;
+    }
+
+    public function setCache(Repository $cache): void
+    {
+        $this->cache = $cache;
     }
 }
