@@ -1,7 +1,7 @@
 # Laravel-MNB
 
 ## Requirements
-Package requires Soap and version 8.1 of PHP or higher.
+Package requires Soap, SimpleXML and version 8.1 of PHP or higher.
 
 ## Know-how
 Please check out for corresponding documentations.
