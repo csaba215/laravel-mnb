@@ -91,6 +91,7 @@ class Client
 
     /**
      * Will return with the current exchange rate
+     * @return array<string,array{rate: float, unit: integer}>
      */
     public function currentExchangeRates(): array
     {
