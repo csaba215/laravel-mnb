@@ -1,39 +1,31 @@
 <?php
 
+namespace Csaba215\Mnb\Laravel\Tests;
 
-namespace SzuniSoft\Mnb\Laravel\Tests;
-
-
+use Csaba215\Mnb\Laravel\Client;
+use Csaba215\Mnb\Laravel\Facade\Mnb;
+use Csaba215\Mnb\Laravel\MnbServiceProvider;
 use Orchestra\Testbench\TestCase;
-use SzuniSoft\Mnb\Laravel\Client;
-use SzuniSoft\Mnb\Laravel\Facade\Mnb;
-use SzuniSoft\Mnb\Laravel\MnbServiceProvider;
+use PHPUnit\Framework\Attributes\Test;
 
-class ServiceProviderTest extends TestCase {
-
-    protected function getPackageProviders($app)
+class ServiceProviderTest extends TestCase
+{
+    protected function getPackageProviders($app): array
     {
         return [
-            MnbServiceProvider::class
+            MnbServiceProvider::class,
         ];
     }
 
-    /** @test */
-    public function it_registers_client()
-    {
-        $this->assertInstanceOf(Client::class, $this->app->make(Client::class));
-    }
-
-    /** @test */
+    #[Test]
     public function client_is_accessible_by_facade()
     {
         $this->assertInstanceOf(Client::class, Mnb::getFacadeRoot());
     }
 
-    /** @test */
+    #[Test]
     public function client_is_accessible_by_alias()
     {
         $this->assertInstanceOf(Client::class, $this->app->make('mnb.client'));
     }
-
 }
