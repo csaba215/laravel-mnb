@@ -127,22 +127,26 @@ class Client
 
     public function lastOpeningDate(): string
     {
-        $xml = simplexml_load_string($this->client->GetDateInterval()->GetDateIntervalResult);
-        if ($xml === false) {
-            throw new Exception('Failed to parse XML response from SOAP API.');
-        }
+        return $this->cache->remember(config('mnb-exchange.cache.key').'.end', config('mnb-exchange.cache.minutes'), function () {
+            $xml = simplexml_load_string($this->client->GetDateInterval()->GetDateIntervalResult);
+            if ($xml === false) {
+                throw new Exception('Failed to parse XML response from SOAP API.');
+            }
 
-        return (string) $xml->DateInterval->attributes()->enddate;
+            return (string) $xml->DateInterval->attributes()->enddate;
+        });
     }
 
     public function firstOpeningDate(): string
     {
-        $xml = simplexml_load_string($this->client->GetDateInterval()->GetDateIntervalResult);
-        if ($xml === false) {
-            throw new Exception('Failed to parse XML response from SOAP API.');
-        }
+        return $this->cache->remember(config('mnb-exchange.cache.key').'.start', config('mnb-exchange.cache.minutes'), function () {
+            $xml = simplexml_load_string($this->client->GetDateInterval()->GetDateIntervalResult);
+            if ($xml === false) {
+                throw new Exception('Failed to parse XML response from SOAP API.');
+            }
 
-        return (string) $xml->DateInterval->attributes()->startdate;
+            return (string) $xml->DateInterval->attributes()->startdate;
+        });
     }
 
     public function setClient(SoapClient $client): void
