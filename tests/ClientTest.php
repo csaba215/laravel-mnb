@@ -21,7 +21,7 @@ class ClientTest extends TestCase
     }
 
     #[Test]
-    public function can_parse_currencies_xml()
+    public function currencies_tests()
     {
         $client = new Client;
         $client->setCache(Cache::store());
@@ -35,6 +35,27 @@ class ClientTest extends TestCase
         $client->setClient($mockClient);
 
         $this->assertEquals(['HUF', 'EUR'], $client->currencies());
+
+        // call again to test cache
+        $this->assertEquals(['HUF', 'EUR'], $client->currencies());
+
+        /* test cache clearing */
+
+        $currencies->GetCurrenciesResult = '<MNBCurrencies><Currencies><Curr>HUF</Curr><Curr>EUR</Curr><Curr>CHF</Curr></Currencies></MNBCurrencies>';
+        $mockClient = Mockery::mock(SoapClient::class);
+        $mockClient->shouldReceive('getCurrencies')
+            ->once()
+            ->andReturn($currencies);
+
+        $client->setClient($mockClient);
+
+        $this->travel(config('mnb-exchange.cache.minutes'))->minutes();
+        $this->travel(1)->seconds();
+
+        $this->assertEquals(['HUF', 'EUR', 'CHF'], $client->currencies());
+
+        // call again to test cache
+        $this->assertEquals(['HUF', 'EUR', 'CHF'], $client->currencies());
     }
 
     #[Test]
@@ -71,6 +92,32 @@ class ClientTest extends TestCase
 
         $this->assertEquals('2025-04-22', $client->lastOpeningDate());
         $this->assertEquals('1949-01-03', $client->firstOpeningDate());
+
+        // call them again to test cache
+        $this->assertEquals('2025-04-22', $client->lastOpeningDate());
+        $this->assertEquals('1949-01-03', $client->firstOpeningDate());
+
+        /* Test cache clearing */
+
+        $dateInterval = new stdClass;
+        $dateInterval->GetDateIntervalResult = '<MNBStoredInterval><DateInterval startdate="1949-02-04" enddate="2025-05-22" /></MNBStoredInterval>';
+        $mockClient = Mockery::mock(SoapClient::class);
+        $mockClient->shouldReceive('GetDateInterval')
+            ->times(2)
+            ->andReturn($dateInterval);
+
+        $client->setClient($mockClient);
+
+        $this->travel(config('mnb-exchange.cache.minutes'))->minutes();
+        $this->travel(1)->seconds();
+
+        $this->assertEquals('2025-05-22', $client->lastOpeningDate());
+        $this->assertEquals('1949-02-04', $client->firstOpeningDate());
+
+        // call again to test cache
+        $this->assertEquals('2025-05-22', $client->lastOpeningDate());
+        $this->assertEquals('1949-02-04', $client->firstOpeningDate());
+
     }
 
     #[Test]
@@ -87,6 +134,24 @@ class ClientTest extends TestCase
 
         $client->setClient($mockClient);
         $this->assertEquals(['EUR' => ['rate' => 409.24, 'unit' => 1], 'USD' => ['rate' => 355.86, 'unit' => 1]], $client->currentExchangeRates());
+        // call again to test cache
+        $this->assertEquals(['EUR' => ['rate' => 409.24, 'unit' => 1], 'USD' => ['rate' => 355.86, 'unit' => 1]], $client->currentExchangeRates());
+
+        $currentExchangeRates = new stdClass;
+        $currentExchangeRates->GetCurrentExchangeRatesResult = '<MNBCurrentExchangeRates><Day date="2025-04-23"><Rate unit="1" curr="EUR">401,01</Rate><Rate unit="1" curr="USD">345,86</Rate></Day></MNBCurrentExchangeRates>';
+        $mockClient = Mockery::mock(SoapClient::class);
+        $mockClient->shouldReceive('GetCurrentExchangeRates')
+            ->once()
+            ->andReturn($currentExchangeRates);
+        $client->setClient($mockClient);
+
+        $this->travel(config('mnb-exchange.cache.minutes'))->minutes();
+        $this->travel(1)->seconds();
+
+        $this->assertEquals(['EUR' => ['rate' => 401.01, 'unit' => 1], 'USD' => ['rate' => 345.86, 'unit' => 1]], $client->currentExchangeRates());
+        // call again to test cache
+        $this->assertEquals(['EUR' => ['rate' => 401.01, 'unit' => 1], 'USD' => ['rate' => 345.86, 'unit' => 1]], $client->currentExchangeRates());
+
     }
 
     #[Test]
@@ -103,5 +168,23 @@ class ClientTest extends TestCase
 
         $client->setClient($mockClient);
         $this->assertEquals(['rate' => 409.24, 'unit' => 1], $client->exchangeRate('EUR', '2025-04-22'));
+        // call again to test cache
+        $this->assertEquals(['rate' => 409.24, 'unit' => 1], $client->exchangeRate('EUR', '2025-04-22'));
+
+        $exchangeRate = new stdClass;
+        $exchangeRate->GetExchangeRatesResult = '<MNBExchangeRates><Day date="2025-04-22"><Rate unit="1" curr="EUR">401,01</Rate></Day></MNBExchangeRates>';
+        $mockClient = Mockery::mock(SoapClient::class);
+        $mockClient->shouldReceive('GetExchangeRates')->with(['startDate' => '2025-04-22', 'endDate' => '2025-04-22', 'currencyNames' => 'EUR'])
+            ->once()
+            ->andReturn($exchangeRate);
+
+        $client->setClient($mockClient);
+
+        $this->travel(config('mnb-exchange.cache.minutes'))->minutes();
+        $this->travel(1)->seconds();
+
+        $this->assertEquals(['rate' => 401.01, 'unit' => 1], $client->exchangeRate('EUR', '2025-04-22'));
+        // call again to test cache
+        $this->assertEquals(['rate' => 401.01, 'unit' => 1], $client->exchangeRate('EUR', '2025-04-22'));
     }
 }
