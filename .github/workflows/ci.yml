@@ -1,0 +1,19 @@
+# Action name
+name: Continuous integration
+
+# Here, this action will be enabled on all pushes.
+# Modify this to fit your needs.
+on:
+  push
+
+# Jobs section
+jobs:
+  test:
+    runs-on: self-hosted
+    container:
+      image: php:8.4-bookworm
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+      - name: ls
+        run: "ls"
