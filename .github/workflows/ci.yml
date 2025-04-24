@@ -9,9 +9,13 @@ on:
 # Jobs section
 jobs:
   test:
+    strategy:
+      matrix:
+        version: [ "8.1", "8.2", "8.3", "8.4" ]
     runs-on: self-hosted
     container:
-      image: php:8.4-cli-alpine
+      image: php:${{ matrix.version }}-cli-alpine
+    name: "PHP${{ matrix.version }} - Tests }}"
     steps:
       - name: setup
         run: "apk add --no-cache curl libzip-dev libxml2-dev \
