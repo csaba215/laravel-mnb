@@ -13,6 +13,10 @@ jobs:
     container:
       image: php:8.4-bookworm
     steps:
+      - name: setup
+        run: "apt update && apt install -y libxml2-dev libcurl3-dev curl libzip-dev libonig-dev \
+        && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin/ --filename=composer \
+        &&  docker-php-ext-install soap dom zip mbstring fileinfo"
       - name: composer install
         run: "composer install"
       - name: lint using pint
