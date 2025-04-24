@@ -11,12 +11,12 @@ jobs:
   test:
     runs-on: self-hosted
     container:
-      image: php:8.4-bookworm
+      image: php:8.4-cli-alpine
     steps:
       - name: setup
-        run: "apt update && apt install -y libxml2-dev libcurl3-dev curl libzip-dev libonig-dev \
-        && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin/ --filename=composer \
-        &&  docker-php-ext-install soap dom zip mbstring fileinfo"
+        run: "apk add --no-cache curl libzip-dev libxml2-dev \
+              && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin/ --filename=composer \
+              && docker-php-ext-install soap zip"
       - name: composer install
         run: "composer install"
       - name: lint using pint
