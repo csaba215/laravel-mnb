@@ -13,7 +13,9 @@ jobs:
     container:
       image: php:8.4-bookworm
     steps:
-#      - name: checkout
-#        uses: actions/checkout@v4
-      - name: ls
-        run: "ls"
+      - name: composer install
+        run: "composer install"
+      - name: lint using pint
+        run: "./vendor/bin/pint -q -n --test"
+      - name: run tests
+        run: "php artisan test"
