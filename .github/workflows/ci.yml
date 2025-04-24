@@ -22,4 +22,10 @@ jobs:
       - name: lint using pint
         run: "./vendor/bin/pint -q -n --test"
       - name: run tests
-        run: "php artisan test"
+        run: "./vendor/phpunit/phpunit/phpunit --configuration phpunit.xml --log-junit test-results/results.xml"
+      - name: Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always()
+        with:
+          files: |
+            test-results/**/*.xml
