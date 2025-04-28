@@ -33,7 +33,7 @@ class Client
 
     private function formatFloat(string $number): float
     {
-        return (float)str_replace(',', '.', $number);
+        return (float) str_replace(',', '.', $number);
     }
 
     private function parseXml(string $xmlString): SimpleXMLElement
@@ -52,13 +52,14 @@ class Client
     }
 
     /**
-     * @param null|array<mixed> $data
+     * @param  null|array<mixed>  $data
+     *
      * @throws MnbException
      */
     private function getFromAPI(string $name, ?array $data = null): string
     {
         try {
-            $xmlString = $this->client->{'Get' . $name}($data)->{'Get' . $name . 'Result'};
+            $xmlString = $this->client->{'Get'.$name}($data)->{'Get'.$name.'Result'};
         } catch (Exception $e) {
             throw new MnbException('Failed to get XML from SOAP API.', 0, $e);
         }
@@ -76,7 +77,7 @@ class Client
      */
     public function currencies(): array
     {
-        return $this->cache->remember(config('mnb-exchange.cache.key') . '.currencies', config('mnb-exchange.cache.minutes'),
+        return $this->cache->remember(config('mnb-exchange.cache.key').'.currencies', config('mnb-exchange.cache.minutes'),
             function () {
                 $xmlString = $this->getFromAPI('Currencies');
 
@@ -87,7 +88,7 @@ class Client
                     throw new MnbException('Incorrect/Empty response from SOAP API.', 0, null, $xmlString);
                 }
 
-                return (array)$currencies;
+                return (array) $currencies;
             }
         );
     }
@@ -120,15 +121,15 @@ class Client
 
         $date = $this->normalizeDate($date);
 
-        return $this->cache->remember(config('mnb-exchange.cache.key') . ".currencies.rate.$code.$date", config('mnb-exchange.cache.minutes'),
+        return $this->cache->remember(config('mnb-exchange.cache.key').".currencies.rate.$code.$date", config('mnb-exchange.cache.minutes'),
             function () use ($date, $code) {
                 $xmlString = $this->getFromAPI('ExchangeRates', ['startDate' => $date, 'endDate' => $date, 'currencyNames' => $code]);
 
                 $xml = $this->parseXml($xmlString);
 
                 return [
-                    'rate' => $this->formatFloat((string)$xml->Day->Rate),
-                    'unit' => (int)$xml->Day->Rate->attributes()->unit,
+                    'rate' => $this->formatFloat((string) $xml->Day->Rate),
+                    'unit' => (int) $xml->Day->Rate->attributes()->unit,
                 ];
             }
         );
@@ -144,7 +145,7 @@ class Client
      */
     public function currentExchangeRates(): array
     {
-        return $this->cache->remember(config('mnb-exchange.cache.key') . '.current', config('mnb-exchange.cache.minutes'), function () {
+        return $this->cache->remember(config('mnb-exchange.cache.key').'.current', config('mnb-exchange.cache.minutes'), function () {
             $xmlString = $this->getFromAPI('CurrentExchangeRates');
 
             $xml = $this->parseXml($xmlString);
@@ -156,9 +157,9 @@ class Client
 
             $current = [];
             foreach ($rates as $rate) {
-                $current[(string)$rate->attributes()->curr] = [
-                    'rate' => $this->formatFloat((string)$rate),
-                    'unit' => (int)$rate->attributes()->unit,
+                $current[(string) $rate->attributes()->curr] = [
+                    'rate' => $this->formatFloat((string) $rate),
+                    'unit' => (int) $rate->attributes()->unit,
                 ];
             }
 
@@ -174,7 +175,7 @@ class Client
      */
     public function lastOpeningDate(): string
     {
-        return $this->cache->remember(config('mnb-exchange.cache.key') . '.end', config('mnb-exchange.cache.minutes'), function () {
+        return $this->cache->remember(config('mnb-exchange.cache.key').'.end', config('mnb-exchange.cache.minutes'), function () {
             $xmlString = $this->getFromAPI('DateInterval');
 
             $xml = $this->parseXml($xmlString);
@@ -184,7 +185,7 @@ class Client
                 throw new MnbException('Failed to parse response from SOAP API.', 0, null, $xmlString);
             }
 
-            return (string)$return;
+            return (string) $return;
         });
     }
 
@@ -196,7 +197,7 @@ class Client
      */
     public function firstOpeningDate(): string
     {
-        return $this->cache->remember(config('mnb-exchange.cache.key') . '.start', config('mnb-exchange.cache.minutes'), function () {
+        return $this->cache->remember(config('mnb-exchange.cache.key').'.start', config('mnb-exchange.cache.minutes'), function () {
             $xmlString = $this->getFromAPI('DateInterval');
 
             $xml = $this->parseXml($xmlString);
@@ -206,7 +207,7 @@ class Client
                 throw new MnbException('Failed to parse response from SOAP API.', 0, null, $xmlString);
             }
 
-            return (string)$return;
+            return (string) $return;
         });
     }
 
