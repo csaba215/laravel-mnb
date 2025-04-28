@@ -25,9 +25,9 @@ jobs:
       - name: Install Laravel ${{ matrix.laravel }}
         run: "composer create-project --quiet --prefer-dist \"laravel/laravel:${{ matrix.laravel }}\" ../laravel"
       - name: Show installed packages
-        run: "composer show --direct"
+        run: "cd ../laravel && composer show --direct"
       - name: setup local package source
-        run: "composer config minimum-stability dev \
+        run: "cd ../laravel && composer config minimum-stability dev \
               && composer config repositories.0 '{ \"type\": \"path\", \"url\": \"../laravel-mnb\", \"options\": { \"symlink\": false } }'"
       - name: install package from source
-        run: "composer require --dev --optimize-autoloader 'csaba215/laravel-mnb:*'"
+        run: "cd ../laravel && composer require --dev --optimize-autoloader 'csaba215/laravel-mnb:*'"
