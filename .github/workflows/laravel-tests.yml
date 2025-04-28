@@ -25,16 +25,18 @@ jobs:
           rm -rf ./.??* || true
           ls -la ./
       - uses: actions/checkout@v4
+        with:
+         path: 'laravel-mnb'
       - name: setup
         run: "apt update && apt -y install curl libzip-dev libxml2-dev \
               && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin/ --filename=composer \
               && docker-php-ext-install soap zip"
       - name: Install Laravel ${{ matrix.laravel }}
-        run: "composer create-project --quiet --prefer-dist \"laravel/laravel:${{ matrix.laravel }}\" ../laravel"
+        run: "composer create-project --quiet --prefer-dist \"laravel/laravel:${{ matrix.laravel }}\" laravel"
       - name: Show installed packages
-        run: "cd ../laravel && composer show --direct"
+        run: "cd laravel && composer show --direct"
       - name: setup local package source
-        run: "cd ../laravel && composer config minimum-stability dev \
+        run: "cd laravel && composer config minimum-stability dev \
               && composer config repositories.0 '{ \"type\": \"path\", \"url\": \"../laravel-mnb\", \"options\": { \"symlink\": false } }'"
       - name: install package from source
-        run: "cd ../laravel && composer require --dev --optimize-autoloader 'csaba215/laravel-mnb:*'"
+        run: "cd laravel && composer require --dev --optimize-autoloader 'csaba215/laravel-mnb:*'"
