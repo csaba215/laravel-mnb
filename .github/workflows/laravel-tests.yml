@@ -15,7 +15,7 @@ jobs:
         laravel: ["11", "12"]
     runs-on: self-hosted
     container:
-      image: php:${{ matrix.php }}-cli-alpine
+      image: php:${{ matrix.php }}-cli-bookworm
     name: "PHP${{ matrix.php }} - Laravel ${{ matrix.laravel }}"
     steps:
       - name: 'Cleanup build folder'
@@ -26,9 +26,9 @@ jobs:
           ls -la ./
       - uses: actions/checkout@v4
       - name: setup
-        run: "apk add --no-cache curl libzip-dev libxml2-dev \
-             && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin/ --filename=composer \
-             && docker-php-ext-install soap zip"
+        run: "apt update && apt install curl libzip-dev libxml2-dev \
+              && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin/ --filename=composer \
+              && docker-php-ext-install soap zip"
       - name: Install Laravel ${{ matrix.laravel }}
         run: "composer create-project --quiet --prefer-dist \"laravel/laravel:${{ matrix.laravel }}\" ../laravel"
       - name: Show installed packages
