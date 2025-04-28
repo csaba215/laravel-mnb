@@ -36,6 +36,9 @@ class Client
     }
 
     /**
+     * Returns all available currencies from cache or from API if no cache is available.
+     * Result is cached.
+     *
      * @return string[]
      */
     public function currencies(): array
@@ -59,6 +62,7 @@ class Client
 
     /**
      * Determines if the currency is supported or not.
+     * It uses cache or API if no cache is available. (Internally uses currencies method)
      */
     public function hasCurrency(string $currency): bool
     {
@@ -66,7 +70,9 @@ class Client
     }
 
     /**
-     * Will return with the cached exchange rate
+     * Returns the requested currency, from cache or from API if no cache is available.
+     * If no date the latest date is fetched from cache or from API if no cache is available.
+     * Result is cached.
      *
      * @return array{'rate': float, "unit": int}
      *
@@ -96,7 +102,8 @@ class Client
     }
 
     /**
-     * Will return with the current exchange rate
+     * Returns the current exchange rates for all available currencies from cache or from API if no cache is available.
+     * Result is cached.
      *
      * @return array<string,array{rate: float, unit: int}>
      */
@@ -125,6 +132,10 @@ class Client
         });
     }
 
+    /**
+     * Return the latest opening date from cache or from API if no cache is available.
+     * Result is cached.
+     */
     public function lastOpeningDate(): string
     {
         return $this->cache->remember(config('mnb-exchange.cache.key').'.end', config('mnb-exchange.cache.minutes'), function () {
@@ -137,6 +148,10 @@ class Client
         });
     }
 
+    /**
+     * Return the first opening date from cache or from API if no cache is available.
+     * Result is cached.
+     */
     public function firstOpeningDate(): string
     {
         return $this->cache->remember(config('mnb-exchange.cache.key').'.start', config('mnb-exchange.cache.minutes'), function () {
@@ -149,11 +164,17 @@ class Client
         });
     }
 
+    /**
+     * Used for testing.
+     */
     public function setClient(SoapClient $client): void
     {
         $this->client = $client;
     }
 
+    /**
+     * Used for testing.
+     */
     public function setCache(Repository $cache): void
     {
         $this->cache = $cache;
