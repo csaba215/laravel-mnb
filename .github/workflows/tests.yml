@@ -25,7 +25,7 @@ jobs:
           ls -la ./
       - uses: actions/checkout@v4
       - name: setup
-        run: "apt update && apt install curl libzip-dev libxml2-dev \
+        run: "apt update && apt -y install curl libzip-dev libxml2-dev \
               && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin/ --filename=composer \
               && docker-php-ext-install soap zip"
       - name: composer install
