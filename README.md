@@ -1,7 +1,9 @@
 # Laravel-MNB
 
+[![Tests](https://github.com/csaba215/laravel-mnb/actions/workflows/tests.yml/badge.svg?branch=master)](https://github.com/csaba215/laravel-mnb/actions/workflows/tests.yml)
+[![Laravel framework tests](https://github.com/csaba215/laravel-mnb/actions/workflows/laravel-tests.yml/badge.svg?branch=master)](https://github.com/csaba215/laravel-mnb/actions/workflows/laravel-tests.yml)
 ## Requirements
-Package requires Soap, SimpleXML and version 8.1 of PHP or higher.
+Package requires Soap, SimpleXML and version 8.2 of PHP or higher.
 
 ## Know-how
 Please check out for corresponding documentations.
