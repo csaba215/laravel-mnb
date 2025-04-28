@@ -17,6 +17,13 @@ jobs:
       image: php:${{ matrix.version }}-cli-alpine
     name: "PHP${{ matrix.version }} - Tests"
     steps:
+      - name: 'Cleanup build folder'
+        run: |
+          ls -la ./
+          rm -rf ./* || true
+          rm -rf ./.??* || true
+          ls -la ./
+      - uses: actions/checkout@v4
       - name: setup
         run: "apk add --no-cache curl libzip-dev libxml2-dev \
               && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin/ --filename=composer \
