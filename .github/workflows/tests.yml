@@ -1,5 +1,5 @@
 # Action name
-name: Run tests
+name: Tests
 
 # Here, this action will be enabled on all pushes.
 # Modify this to fit your needs.
