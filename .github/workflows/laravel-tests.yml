@@ -1,0 +1,42 @@
+# Action name
+name: Laravel framework tests
+
+# Here, this action will be enabled on all pushes.
+# Modify this to fit your needs.
+on:
+  push
+
+# Jobs section
+jobs:
+  test:
+    strategy:
+      matrix:
+        php: ["8.2", "8.3", "8.4"]
+        laravel: ["11", "12"]
+    runs-on: self-hosted
+    container:
+      image: php:${{ matrix.php }}-cli-bookworm
+    name: "PHP${{ matrix.php }} - Laravel ${{ matrix.laravel }}"
+    steps:
+      - name: 'Cleanup build folder'
+        run: |
+          ls -la ./
+          rm -rf ./* || true
+          rm -rf ./.??* || true
+          ls -la ./
+      - uses: actions/checkout@v4
+        with:
+         path: 'laravel-mnb'
+      - name: setup
+        run: "apt update && apt -y install curl libzip-dev libxml2-dev \
+              && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin/ --filename=composer \
+              && docker-php-ext-install soap zip"
+      - name: Install Laravel ${{ matrix.laravel }}
+        run: "composer create-project --quiet --prefer-dist \"laravel/laravel:${{ matrix.laravel }}\" laravel"
+      - name: Show installed packages
+        run: "cd laravel && composer show --direct"
+      - name: setup local package source
+        run: "cd laravel && composer config minimum-stability dev \
+              && composer config repositories.0 '{ \"type\": \"path\", \"url\": \"../laravel-mnb\", \"options\": { \"symlink\": false } }'"
+      - name: install package from source
+        run: "cd laravel && composer require --dev --optimize-autoloader 'csaba215/laravel-mnb:*'"

@@ -1,0 +1,42 @@
+# Action name
+name: Tests
+
+# Here, this action will be enabled on all pushes.
+# Modify this to fit your needs.
+on:
+  push
+
+# Jobs section
+jobs:
+  test:
+    strategy:
+      matrix:
+        version: ["8.3", "8.4"]
+    runs-on: self-hosted
+    container:
+      image: php:${{ matrix.version }}-cli-bookworm
+    name: "PHP${{ matrix.version }} - Tests"
+    steps:
+      - name: 'Cleanup build folder'
+        run: |
+          ls -la ./
+          rm -rf ./* || true
+          rm -rf ./.??* || true
+          ls -la ./
+      - uses: actions/checkout@v4
+      - name: setup
+        run: "apt update && apt -y install curl libzip-dev libxml2-dev \
+              && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin/ --filename=composer \
+              && docker-php-ext-install soap zip"
+      - name: composer install
+        run: "composer install"
+      - name: lint using pint
+        run: "./vendor/bin/pint -q -n --test"
+      - name: run tests
+        run: "./vendor/phpunit/phpunit/phpunit --configuration phpunit.xml --log-junit test-results/results.xml"
+      - name: Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always()
+        with:
+          files: |
+            test-results/**/*.xml
