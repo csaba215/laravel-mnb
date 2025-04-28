@@ -12,8 +12,7 @@ composer show --direct
 
 echo "Add pacakge from source"
 composer config minimum-stability dev
-ls -ls
-#composer config repositories.0 '{ "type": "path", "url": "../work", "options": { "symlink": false } }'
+composer config repositories.0 '{ "type": "path", "url": "../laravel-mnb", "options": { "symlink": false } }'
 
 # No version information with "type":"path"
-#composer require --dev --optimize-autoloader "csaba215/laravel-mnb:*"
+composer require --dev --optimize-autoloader "csaba215/laravel-mnb:*"
