@@ -3,3 +3,5 @@ composer.lock
 /vendor/
 .git
 .idea
+/.phpunit.result.cache
+/.phpunit.cache/
