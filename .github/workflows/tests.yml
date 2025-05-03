@@ -12,7 +12,7 @@ jobs:
     strategy:
       matrix:
         version: ["8.3", "8.4"]
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     container:
       image: php:${{ matrix.version }}-cli-bookworm
     name: "PHP${{ matrix.version }} - Tests"
