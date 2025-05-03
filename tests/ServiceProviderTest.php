@@ -6,8 +6,13 @@ use Csaba215\Mnb\Laravel\Client;
 use Csaba215\Mnb\Laravel\Facade\Mnb;
 use Csaba215\Mnb\Laravel\MnbServiceProvider;
 use Orchestra\Testbench\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\UsesClass;
 
+#[CoversClass(Mnb::class)]
+#[CoversClass(MnbServiceProvider::class)]
+#[UsesClass(Client::class)]
 class ServiceProviderTest extends TestCase
 {
     protected function getPackageProviders($app): array
