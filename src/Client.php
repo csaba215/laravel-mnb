@@ -9,7 +9,6 @@ use Illuminate\Contracts\Cache\Repository;
 use Illuminate\Support\Facades\Cache;
 use SimpleXMLElement;
 use SoapClient;
-use SoapFault;
 
 class Client
 {
@@ -18,11 +17,15 @@ class Client
     protected Repository $cache;
 
     /**
-     * @throws SoapFault
+     * @throws MnbException
      */
     public function __construct()
     {
-        $this->client = new SoapClient(config('mnb-exchange.wsdl'));
+        try {
+            $this->client = new SoapClient(config('mnb-exchange.wsdl'));
+        } catch (Exception $e) {
+            throw new MnbException('Failed to initialize SOAP API connection.', 0, $e);
+        }
         $this->cache = Cache::store(config('mnb-exchange.cache.store'));
     }
 
@@ -45,7 +48,7 @@ class Client
         }
 
         if ($xml === false) {
-            throw new Exception('Failed to parse XML response from SOAP API.');
+            throw new MnbException('Failed to parse XML response from SOAP API.', 0, null, $xmlString);
         }
 
         return $xml;
@@ -85,7 +88,7 @@ class Client
 
                 $currencies = $xml->Currencies?->Curr;
                 if ($currencies === null) {
-                    throw new MnbException('Incorrect/Empty response from SOAP API.', 0, null, $xmlString);
+                    throw new MnbException('Failed to parse response from SOAP API.', 0, null, $xmlString);
                 }
 
                 return (array) $currencies;
@@ -127,9 +130,15 @@ class Client
 
                 $xml = $this->parseXml($xmlString);
 
+                $rate = $xml->Day?->Rate;
+                $unit = $rate?->attributes()?->unit;
+                if ($rate === null || $unit === null) {
+                    throw new MnbException('Failed to parse response from SOAP API.', 0, null, $xmlString);
+                }
+
                 return [
-                    'rate' => $this->formatFloat((string) $xml->Day->Rate),
-                    'unit' => (int) $xml->Day->Rate->attributes()->unit,
+                    'rate' => $this->formatFloat((string) $rate),
+                    'unit' => (int) $unit,
                 ];
             }
         );
@@ -180,7 +189,7 @@ class Client
 
             $xml = $this->parseXml($xmlString);
 
-            $return = $xml->DateInterval->attributes()->enddate;
+            $return = $xml->DateInterval?->attributes()?->enddate;
             if ($return === null) {
                 throw new MnbException('Failed to parse response from SOAP API.', 0, null, $xmlString);
             }

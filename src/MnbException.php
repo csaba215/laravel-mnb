@@ -15,11 +15,6 @@ class MnbException extends Exception
         $this->xml = $xml;
     }
 
-    public function __toString(): string
-    {
-        return __CLASS__.": [{$this->code}]: {$this->message}\n";
-    }
-
     public function getXML(): ?string
     {
         return $this->xml;
